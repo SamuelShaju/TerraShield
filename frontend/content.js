@@ -3,6 +3,30 @@ var testdata;
 var prediction;
 
 
+// Listen for messages from content scripts or other extension pages
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    // Check if the message contains a greeting
+    if (request.threshold) {
+        // Send a response to the content script or extension page
+        sendResponse({ message: window.localStorage.getItem("threshold") });
+
+        err.innerHTML = "Current Page: " + request.threshold ;
+    }
+});
+
+  // Listen for messages from the extension
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    // Check if the message contains a greeting
+    if (request.greeting) {
+      // Send a response to the extension
+      sendResponse({ message: prediction, pos: pos, neg: neg });
+  
+      // Log the message to the console
+      console.log('Received message:', request.greeting);
+    }
+});
+
+
 
 
 
@@ -352,7 +376,8 @@ let preds = [];
 function getPred(){
     parenttestdata = [isIPInURL(url),isLongURL(url),isTinyURL(url),isAlphaNumericURL(url),isRedirectingURL(url),isHypenURL(url),isMultiDomainURL(url),isFaviconDomainUnidentical(url),isIllegalHttpsURL(url),isImgFromDifferentDomain(),isAnchorFromDifferentDomain(),isScLnkFromDifferentDomain(),isFormActionInvalid(),isMailToAvailable(),isStatusBarTampered(),isIframePresent()];
     Parentpredict(parenttestdata).then((predictedValue) => {
-        prediction = predictedValue;
+        prediction = predictedValue[0];
+        console.log(prediction);
     })
 
     // chrome.extension.sendRequest(prediction);
@@ -399,13 +424,15 @@ function getPred(){
 
 async function run(){
     const predictionArray = await getPred();
-    console.log(names);
-    console.log(links);
-    console.log(preds);
+    // console.log(names);
+    // console.log(links);
+    // console.log(preds);
 
 
     highlightLink();
-
+    result={};
+    links.forEach((link, i) => result[link] = preds[i]);
+    console.log(result);
 }
 
 run();
@@ -419,23 +446,45 @@ function getGreenToRedColor(value) {
     return "rgba(" + green + "," + red + ",0, 0.2)";
   }
   
-
+  var pos = 0;
+  var neg = 0;
 function highlightLink() {
     var x = document.querySelectorAll("a");
+
+    var threshold = prompt("Enter the threshold percentage value")/100;
+
     for(var i = 0; i<x.length;i++)
     {
         var index = links.indexOf(x[i].href);
-        x[i].setAttribute("style", "background-color:"+getGreenToRedColor(preds[index]));
-        x[i].setAttribute("title", "Probability:"+(preds[index]*100).toFixed(2));
+        // x[i].setAttribute("style", "background-color:"+getGreenToRedColor(preds[index]));
+        // x[i].setAttribute("title", "Probability:"+(preds[index]*100).toFixed(2));
+        
+        if(preds[index] >threshold)
+        {
+            x[i].setAttribute("style", "background-color:rgba(255,0,0,0.2)");
+            x[i].setAttribute("title", "Probability:"+(preds[index]*100).toFixed(2));
+            neg += 1;
+        }
+        else
+        {
+            x[i].setAttribute("style", "background-color:rgba(0,255,0,0.2)");
+            x[i].setAttribute("title", "Probability:"+(preds[index]*100).toFixed(2));
+            pos += 1;
+        }
     }
 
-    x.forEach(function(tag){
-        tag.addEventListener("mouseover", function(){
-            const newSib = document.createElement("sup");
-            newSib.classList.add('child');
-            newSib.textContent = "<a href='https://www.google.com'>Report</a>"
-        })
-    })
+    console.log("Positive Links: "+pos);
+    console.log("Negative Links: "+neg);
+
+    
+
+    // x.forEach(function(tag){
+    //     tag.addEventListener("mouseover", function(){
+    //         const newSib = document.createElement("sup");
+    //         newSib.classList.add('child');
+    //         newSib.textContent = "<a href='https://www.google.com'>Report</a>"
+    //     })
+    // })
 
 }
 

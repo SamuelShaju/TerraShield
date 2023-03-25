@@ -13,15 +13,28 @@
   "content_scripts": [
       {
         "matches": ["<all_urls>"],
-        "js": ["tf.min.js","jquery-3.1.1.min.js","content.js"],
+        "js": ["tf.min.js","jquery-3.1.1.min.js", "content.js"],
         "json": ["model/model.json"]
       }
    ], 
+   "permissions": [
+    "activeTab",
+    "tabs",
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "http://*/*",
+    "https://*/*"],
   "web_accessible_resources": [
     "tf.min.js",
     "modelParent/model.json",
     "modelParent/group1-shard1of1.bin",
     "modelChild/model.json",
     "modelChild/group1-shard1of1.bin"
-  ]
+  ],
+  "browser_action": {
+    "default_icon": "detective.png",
+    "default_title": "Phishing Detective",
+    "default_popup": "Phishing.html"
+  }
 }
