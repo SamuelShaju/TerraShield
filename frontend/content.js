@@ -430,7 +430,7 @@ async function run(){
 
 
     highlightLink();
-    result={};
+result={};
     links.forEach((link, i) => result[link] = preds[i]);
     console.log(result);
 }

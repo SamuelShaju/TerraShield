@@ -27,7 +27,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
         pos.innerHTML = "No. of Positive links: " + response['pos']
 
         var neg = document.getElementById("neg_link");
-        neg.innerHTML = "No. of Negative links: " + response['neg']
+        neg.innerHTML = "No. of Positive links: " + response['neg']
 
     });
 });
